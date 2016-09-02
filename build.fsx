@@ -16,7 +16,7 @@ open Fake.Testing
 let solutionFile  = "./bbcode.sln"
 
 // Pattern specifying assemblies to be tested using NUnit
-let testAssemblies = "**/bin/Release/*Tests.dll"
+let testAssemblies = "./bin/tests/**/*Tests.dll"
 
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
