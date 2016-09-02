@@ -1,6 +1,11 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{A4EA49DF-C7C8-4115-8737-91E0EF4078D1}"
+	ProjectSection(SolutionItems) = preProject
+		paket.dependencies = paket.dependencies
+	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BBCode", "bbcode\bbcode.csproj", "{BCC55348-5CF9-4FD0-BEC9-6D2EF52D19EC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "tests\tests.csproj", "{812ACC21-C35B-405A-8A29-5B3CA7BFBBA8}"
