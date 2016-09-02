@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Web;
 
@@ -14,34 +15,44 @@ namespace BBCode
         private const string QUOTE = "quote";
         private const char RIGHT_BRACKET = ']';
         private static readonly string[] BBTAGS = new[] { BOLD, ITALIC, QUOTE, CODE, COLOR };
+
         //\'\[color={[^\]]+}\]\'
-        private static readonly List<string> colorList = new List<string>(new[]
-                                                                              {
-                                                                                  "svart", "brun", "vinröd",
-                                                                                  "röd", "orange", "gul",
-                                                                                  "oliv", "lime", "grön",
-                                                                                  "turkos", "ljusblå", "blå",
-                                                                                  "mörkblå", "lila", "rosa",
-                                                                                  "grå", "silver", "vit"
-                                                                              }).ConvertAll(
-            s => HttpUtility.HtmlEncode(s));
 
         private static readonly string[] RENDERTAG = new[] { "b", "i", "blockquote", "pre", "span" };
+        private readonly IDictionary<string, string> _colors;
 
-        private static readonly List<string> replaceList = new List<string>(new[]
-                                                                                {
-                                                                                    "000000", "663300", "800000",
-                                                                                    "FF0000", "FF9900", "FFFF00",
-                                                                                    "808000", "00FF00", "008000",
-                                                                                    "008080", "00FFFF", "0000FF",
-                                                                                    "000080", "800080", "FF00FF",
-                                                                                    "808080", "C0C0C0", "FFFFFF"
-                                                                                });
+        public BBRenderer(IDictionary<string, string> colors = null)
+        {
+            if (colors == null)
+            {
+                var colorList = new List<string>(new[]
+                  {
+                  "svart", "brun", "vinröd",
+                  "röd", "orange", "gul",
+                  "oliv", "lime", "grön",
+                  "turkos", "ljusblå", "blå",
+                  "mörkblå", "lila", "rosa",
+                  "grå", "silver", "vit"
+                    }).ConvertAll(s => HttpUtility.HtmlEncode(s));
+                var replaceList = new List<string>(new[]
+                    {
+                    "000000", "663300", "800000",
+                    "FF0000", "FF9900", "FFFF00",
+                    "808000", "00FF00", "008000",
+                    "008080", "00FFFF", "0000FF",
+                    "000080", "800080", "FF00FF",
+                    "808080", "C0C0C0", "FFFFFF"
+                });
+                colors = colorList.Zip(replaceList, Tuple.Create)
+                      .ToDictionary(t => t.Item1, t => t.Item2);
+            }
+            _colors = colors;
+        }
 
         private static readonly Dictionary<string, string> TagDictionary =
             GetDictionary_KeyValueOrdinal<string, string>(BBTAGS, RENDERTAG);
 
-        public static Dictionary<TKey, TValue> GetDictionary<TKey, TValue>(params object[] args)
+        private static Dictionary<TKey, TValue> GetDictionary<TKey, TValue>(params object[] args)
         {
             var dic = new Dictionary<TKey, TValue>();
 
@@ -50,7 +61,7 @@ namespace BBCode
             return dic;
         }
 
-        public static Dictionary<TKey, TValue> GetDictionary_KeyValueOrdinal<TKey, TValue>(object[] keys,
+        private static Dictionary<TKey, TValue> GetDictionary_KeyValueOrdinal<TKey, TValue>(object[] keys,
                                                                                            object[] values)
         {
             var dic = new Dictionary<TKey, TValue>();
@@ -60,7 +71,7 @@ namespace BBCode
             return dic;
         }
 
-        public static string Render(string text)
+        public string Render(string text)
         {
             var queue = new List<string>();
 
@@ -176,7 +187,7 @@ namespace BBCode
             return output.ToString();
         }
 
-        private static AttributeType GetAttributeType(string attr)
+        private AttributeType GetAttributeType(string attr)
         {
             if (attr.Length == 0) return AttributeType.Empty;
             if (attr[0] == '#')
@@ -198,13 +209,12 @@ namespace BBCode
                     allLetters &= char.IsLetter(attr[i]);
 
                 if (!allLetters) return AttributeType.InValid;
-                int coloridx = colorList.IndexOf(attr);
-                if (coloridx < 0) return AttributeType.InValid;
+                if (!_colors.ContainsKey(attr)) return AttributeType.InValid;
                 return AttributeType.ColorName;
             }
         }
 
-        private static string RenderAttribute(string tag, string attr, AttributeType type)
+        private string RenderAttribute(string tag, string attr, AttributeType type)
         {
             if (tag != COLOR) return string.Empty;
 
@@ -215,9 +225,10 @@ namespace BBCode
                 case AttributeType.ColorCode:
                     return " style=\"color:" + attr + "\" ";
                 case AttributeType.ColorName:
-                    int coloridx = colorList.IndexOf(attr);
-                    if (coloridx < 0) return string.Empty;
-                    attr = "#" + replaceList[coloridx];
+                    string colorValue;
+                    if (!_colors.TryGetValue(attr, out colorValue))
+                        return string.Empty;
+                    attr = "#" + colorValue;
                     return " style=\"color:" + attr + "\" ";
                 case AttributeType.Empty:
                     return string.Empty;
