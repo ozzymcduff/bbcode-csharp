@@ -16,7 +16,7 @@ open Fake.Testing
 let solutionFile  = "./bbcode.sln"
 
 // Pattern specifying assemblies to be tested using NUnit
-let testAssemblies = "./bin/tests/**/*Tests.dll"
+let testAssemblies = "**/bin/Release/Tests.dll"
 
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
@@ -29,17 +29,6 @@ let (|Fsproj|Csproj|Vbproj|) (projFileName:string) =
     | f when f.EndsWith("csproj") -> Csproj
     | f when f.EndsWith("vbproj") -> Vbproj
     | _                           -> failwith (sprintf "Project file %s not supported. Unknown project type." projFileName)
-
-
-
-// Copies binaries from default VS location to expected bin folder
-// But keeps a subdirectory structure for each project in the 
-// src folder to support multiple project outputs
-Target "CopyBinaries" (fun _ ->
-    !! "**/*.??proj"
-    |>  Seq.map (fun f -> ((System.IO.Path.GetDirectoryName f) @@ "bin/Release", "bin" @@ (System.IO.Path.GetFileNameWithoutExtension f)))
-    |>  Seq.iter (fun (fromDir, toDir) -> CopyDir toDir fromDir (fun _ -> true))
-)
 
 // --------------------------------------------------------------------------------------
 // Clean build results
@@ -76,7 +65,6 @@ Target "all" DoNothing
   
 "clean"
   ==> "build"
-  ==> "CopyBinaries"
   ==> "test"
   ==> "all"
 

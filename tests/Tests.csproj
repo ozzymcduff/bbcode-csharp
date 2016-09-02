@@ -39,7 +39,7 @@
   <ItemGroup>
     <ProjectReference Include="..\bbcode\bbcode.csproj">
       <Project>{BCC55348-5CF9-4FD0-BEC9-6D2EF52D19EC}</Project>
-      <Name>BBCode</Name>
+      <Name>bbcode</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
