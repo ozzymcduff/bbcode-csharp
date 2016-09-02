@@ -1,0 +1,9 @@
+sudo: false
+language: csharp 
+
+solution: ./bbcode.sln
+install:
+    - bash build.sh build
+
+script: 
+  - bash build.sh test_only
