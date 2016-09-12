@@ -60,12 +60,12 @@ Target "test" DoNothing
 
 Target "all" DoNothing
 
-"test_only"
- ==> "test"
-  
 "clean"
   ==> "build"
   ==> "test"
   ==> "all"
+
+"test_only"
+ ==> "test"
 
 RunTargetOrDefault "test"
